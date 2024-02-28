@@ -58,8 +58,8 @@
 <body ng-controller="ImageController" class="container mx-auto mt-4">
     <h1 class="text-center text-4xl font-bold mb-4">Garbuz Angular page</h1>
     <h2 class="text-center text-2xl font-bold mb-4">You are welcome to click on any picture you want and it will open.</h2>
-    <div class="flex">
-        <div class="flex-grow">
+    <div class="lg:flex">
+        <div class="lg:flex-grow">
             <div ng-repeat="row in displayedRows" class="image-row">
                 <div ng-repeat="image in row" class="image">
                     <img ng-src="{{image.url}}" ng-click="selectImage(image)" class="rounded-lg shadow-md">
@@ -71,7 +71,7 @@
                 <button ng-click="nextPage()" class="btn btn-primary" ng-disabled="currentPage === totalPages">Next</button>
             </div>
         </div>
-        <div class="selected-image-container" ng-show="selectedImage" ng-class="{ 'active': selectedImage }">
+        <div class="selected-image-container lg:ml-4" ng-show="selectedImage" ng-class="{ 'active': selectedImage }">
             <span class="close-button" ng-click="closeSelectedImage()">&times;</span>
             <img ng-src="{{selectedImage.url}}" class="img-fluid rounded-lg shadow-md">
         </div>
