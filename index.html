@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html ng-app="imageBrowserApp">
+
+<head>
+    <title>Garbuz Angular page</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.4.1/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" />
+    <style>
+        .image-row {
+            white-space: nowrap;
+            margin-bottom: 10px;
+        }
+
+        .image {
+            display: inline-block;
+            margin-right: 10px;
+        }
+
+        .selected-image-container {
+            position: fixed;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            background-color: #ffffff;
+            box-shadow: -5px 0 10px rgba(0, 0, 0, 0.2);
+            z-index: 999;
+            transform: translateX(100%);
+            transition: transform 0.3s ease-in-out;
+        }
+
+        .selected-image-container.active {
+            transform: translateX(0);
+        }
+
+        .selected-image img {
+            border: 2px solid #007BFF;
+            border-radius: 5px;
+            max-width: 100%;
+            max-height: calc(100% - 40px); /* Adjusted for padding */
+        }
+
+        .close-button {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            cursor: pointer;
+            font-size: 30px;
+        }
+    </style>
+</head>
+
+<body ng-controller="ImageController" class="container mx-auto mt-4">
+    <h1 class="text-center text-4xl font-bold mb-4">Garbuz Angular page</h1>
+    <h2 class="text-center text-2xl font-bold mb-4">You are welcome to click on any picture you want and it will open.</h2>
+    <div class="flex">
+        <div class="flex-grow">
+            <div ng-repeat="row in displayedRows" class="image-row">
+                <div ng-repeat="image in row" class="image">
+                    <img ng-src="{{image.url}}" ng-click="selectImage(image)" class="rounded-lg shadow-md">
+                </div>
+            </div>
+            <div class="text-center mt-4">
+                <button ng-click="prevPage()" class="btn btn-primary" ng-disabled="currentPage === 1">Prev</button>
+                <span class="mx-2">{{currentPage}} / {{totalPages}}</span>
+                <button ng-click="nextPage()" class="btn btn-primary" ng-disabled="currentPage === totalPages">Next</button>
+            </div>
+        </div>
+        <div class="selected-image-container" ng-show="selectedImage" ng-class="{ 'active': selectedImage }">
+            <span class="close-button" ng-click="closeSelectedImage()">&times;</span>
+            <img ng-src="{{selectedImage.url}}" class="img-fluid rounded-lg shadow-md">
+        </div>
+    </div>
+
+    <script>
+        angular.module('imageBrowserApp', [])
+            .controller('ImageController', function ($scope, $http) {
+                $scope.images = [];
+                $scope.displayedRows = [];
+                $scope.selectedImage = null;
+                $scope.imagesPerRow = 8;
+                $scope.imagesPerPage = 5 * $scope.imagesPerRow;
+                $scope.currentPage = 1;
+
+                // Fetching images from picsum.photos
+                $http.get('https://picsum.photos/list')
+                    .then(function (response) {
+                        $scope.images = response.data.map(function (imageData) {
+                            return {
+                                id: imageData.id,
+                                url: 'https://picsum.photos/id/' + imageData.id + '/100/100'
+                            };
+                        });
+
+                        $scope.updateDisplayedRows();
+                    });
+
+                $scope.selectImage = function (image) {
+                    $scope.selectedImage = {
+                        id: image.id,
+                        url: 'https://picsum.photos/id/' + image.id + '/450/450'
+                    };
+                };
+
+                $scope.closeSelectedImage = function () {
+                    $scope.selectedImage = null;
+                };
+
+                $scope.updateDisplayedRows = function () {
+                    var startIndex = ($scope.currentPage - 1) * $scope.imagesPerPage;
+                    var endIndex = startIndex + $scope.imagesPerPage;
+                    $scope.displayedRows = [];
+                    for (var i = startIndex; i < endIndex && i < $scope.images.length; i += $scope.imagesPerRow) {
+                        $scope.displayedRows.push($scope.images.slice(i, i + $scope.imagesPerRow));
+                    }
+
+                    $scope.totalPages = Math.ceil($scope.images.length / $scope.imagesPerPage);
+                };
+
+                $scope.nextPage = function () {
+                    if ($scope.currentPage < $scope.totalPages) {
+                        $scope.currentPage++;
+                        $scope.updateDisplayedRows();
+                    }
+                };
+
+                $scope.prevPage = function () {
+                    if ($scope.currentPage > 1) {
+                        $scope.currentPage--;
+                        $scope.updateDisplayedRows();
+                    }
+                };
+            });
+    </script>
+</body>
+
+</html>
